@@ -1,0 +1,44 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+dataset = pd.read_csv('Restaurant_Reviews.tsv', delimiter = '\t', quoting = 3)
+
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+ps = PorterStemmer()
+# nltk.download('stopwords')
+corpus = []
+
+for i in range(0,1000):
+    review = dataset['Review'][i]
+    review = re.sub('[^a-zA-Z]', ' ', review)
+    review = review.lower()
+    review = review.split()
+    
+    review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
+    review = ' '.join(review)
+    corpus.append(review)
+    
+# r = [word for word in review if not word in set(stopwords.words('english'))]
+# r1 = [word for word in review if not word in set(stopwords.words('english'))]
+
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer(max_features = 1500)
+
+X = cv.fit_transform(corpus).toarray()
+y = dataset.iloc[:, -1].values
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state = 0)
+
+from sklearn.tree import DecisionTreeClassifier
+dtc_clf = DecisionTreeClassifier()
+dtc_clf.fit(X_train, y_train)
+y_pred5 = dtc_clf.predict(X_test) 
+
+dtc_clf.score(X_train, y_train)
+dtc_clf.score(X_test, y_test)
+dtc_clf.score(X,y)
